@@ -18,23 +18,23 @@ ifeq ($(OS),Windows_NT)
 endif
 
 # Nomes dos executáveis
-EXECUTABLES = programa_c programa_cpp
+EXECUTABLES = GeradorDeInstancias AlgoritmoDeBlossom
 
 # Regra padrão (compila tudo)
 all: $(EXECUTABLES)
 
-# Regra para compilar o programa em C
-programa_c: src/programa.c
-	$(CC) $(CFLAGS) $< -o $@$(EXE_SUFFIX) $(LDFLAGS)
+# Regra para compilar o GeradorDeInstancias
+GeradorDeInstancias: src/GeradorDeInstancias.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@$(EXE_SUFFIX) $(LDFLAGS)
 
-# Regra para compilar o programa em C++
-programa_cpp: src/programa.cpp
+# Regra para compilar o AlgoritmoDeBlossom
+AlgoritmoDeBlossom: src/AlgoritmoDeBlossom.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@$(EXE_SUFFIX) $(LDFLAGS)
 
 # Regra para executar os programas
 run: all
-	./programa_c$(EXE_SUFFIX)
-	./programa_cpp$(EXE_SUFFIX)
+	./GeradorDeInstancias$(EXE_SUFFIX)
+	./AlgoritmoDeBlossom$(EXE_SUFFIX)
 
 # Regra para limpar os arquivos gerados
 clean:
