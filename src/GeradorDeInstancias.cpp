@@ -14,63 +14,63 @@
 
 using namespace std;
 
-vector<pair<int, int>> generateGraph(int vertices, int edges) {
-    vector<pair<int, int>> edgeList;
-    if (vertices <= 0 || edges <= 0) return edgeList;
+vector<pair<int, int>> gerarGrafo(int vertices, int arestas) {
+    vector<pair<int, int>> listaArestas;
+    if (vertices <= 0 || arestas <= 0) return listaArestas;
 
-    set<pair<int, int>> edgeSet;
-    int maxEdges = vertices * (vertices - 1) / 2;
-    edges = min(edges, maxEdges);
+    set<pair<int, int>> conjuntoArestas;
+    int maxArestas = vertices * (vertices - 1) / 2;
+    arestas = min(arestas, maxArestas);
 
-    while (edgeList.size() < static_cast<size_t>(edges)){
+    while (listaArestas.size() < static_cast<size_t>(arestas)){
         int u = rand() % vertices;
         int v = rand() % vertices;
 
         if (u == v) continue;
         if (u > v) swap(u, v);
 
-        if (!edgeSet.count({u, v})) {
-            edgeSet.insert({u, v});
-            edgeList.push_back({u, v});
+        if (!conjuntoArestas.count({u, v})) {
+            conjuntoArestas.insert({u, v});
+            listaArestas.push_back({u, v});
         }
     }
 
-    return edgeList;
+    return listaArestas;
 }
 
 int main() {
     srand(time(0));
-    const int instances = 200;
-    const string directory = "testGraphs";
+    const int instancias = 200;
+    const string diretorio = "grafosTeste";
 
     // Criação de diretório cross-platform
     #ifdef _WIN32
-    _mkdir(directory.c_str());
+    _mkdir(diretorio.c_str());
     #else 
-    mkdir(directory.c_str(), 0777);
+    mkdir(diretorio.c_str(), 0777);
     #endif
 
-    ofstream sizesFile("sizes.txt");
-    ofstream resultsFile("results.txt");
+    ofstream arquivoTamanhos("tamanhos.txt");
+    ofstream arquivoResultados("resultados.txt");
 
-    for (int i = 0; i < instances; ++i) {
+    for (int i = 0; i < instancias; ++i) {
         int vertices = rand() % 19999 + 1; // 1-20000
-        int edges = rand() % 20000;
+        int arestas = rand() % 20000;
 
-        int maxEdges = vertices * (vertices - 1) / 2;
-        edges = min(edges, maxEdges);
+        int maxArestas = vertices * (vertices - 1) / 2;
+        arestas = min(arestas, maxArestas);
 
-        auto graph = generateGraph(vertices, edges);
+        auto grafo = gerarGrafo(vertices, arestas);
 
-        string filename = directory + "/graph" + to_string(i + 1) + ".txt";
-        ofstream file(filename);
-        for (auto& edge : graph) {
-            file << edge.first << " " << edge.second << endl;
+        string nomeArquivo = diretorio + "/grafo" + to_string(i + 1) + ".txt";
+        ofstream arquivo(nomeArquivo);
+        for (auto& aresta : grafo) {
+            arquivo << aresta.first << " " << aresta.second << endl;
         }
-        file.close();
+        arquivo.close();
 
-        sizesFile << (vertices + edges) << endl;
-        resultsFile << "Grafo " << i << ": " << vertices << "x" << edges << " | ";
+        arquivoTamanhos << (vertices + arestas) << endl;
+        arquivoResultados << "Grafo " << i << ": " << vertices << "x" << arestas << " | ";
     }
 
     return 0;
