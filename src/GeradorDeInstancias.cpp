@@ -14,6 +14,7 @@
 
 using namespace std;
 
+// Função para gerar um grafo aleatório com um número específico de vértices e arestas
 vector<pair<int, int>> gerarGrafo(int vertices, int arestas) {
     vector<pair<int, int>> listaArestas;
     if (vertices <= 0 || arestas <= 0) return listaArestas;

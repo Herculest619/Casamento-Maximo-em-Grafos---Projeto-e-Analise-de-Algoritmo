@@ -15,6 +15,7 @@ using namespace std::chrono;
 
 class AlgoritmoBlossom {
 public:
+    // Função para ler os tamanhos dos grafos a partir de um arquivo
     vector<string> lerTamanhos() {
         vector<string> tamanhos;
         ifstream arquivo("tamanhos.txt");
@@ -23,6 +24,7 @@ public:
         return tamanhos;
     }
 
+    // Função para ler um grafo a partir de um arquivo e retornar sua representação matricial
     vector<vector<int>> lerGrafo(const string& nomeArquivo, int& verticeMaximo) {
         ifstream arquivo(nomeArquivo);
         vector<pair<int, int>> arestas;
@@ -48,6 +50,7 @@ public:
         return grafo;
     }
 
+    // Função para encontrar o emparelhamento máximo em um grafo
     int encontrarEmparelhamentoMaximo(const vector<vector<int>>& grafo, int instancia) {
         int n = grafo.size();
         vector<int> emparelhamento(n, -1);
@@ -76,6 +79,7 @@ public:
     }
 
 private:
+    // Função de busca em profundidade para encontrar emparelhamentos
     bool buscaProfundidade(int u, vector<bool>& visitado, const vector<vector<int>>& grafo, vector<int>& emparelhamento) {
         for (size_t v = 0; v < grafo.size(); ++v) {
             if (grafo[u][v] && !visitado[v]) {
