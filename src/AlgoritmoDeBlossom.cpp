@@ -1,3 +1,5 @@
+// Hércules Aparecido Teixeira - 18.2.8072
+
 #include <iostream>
 #include <fstream> // Usado para manipulação de arquivos
 #include <vector>

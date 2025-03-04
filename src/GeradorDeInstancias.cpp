@@ -1,3 +1,5 @@
+// Hércules Aparecido Teixeira - 18.2.8072
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -105,7 +107,7 @@ int main() {
     clock_t end = clock();
     double tempo = static_cast<double>(end - start) / CLOCKS_PER_SEC;
     cout << "Tempo total: " << tempo << " segundos\n";
-    
+
     cout << "Grafos gerados e salvos em " << diretorio << "/grafos.txt\n\n" << endl;
 
     return 0;
