@@ -14,16 +14,23 @@
 
 using namespace std;
 
+// Struct para representar um grafo usando lista de adjacência
+struct Grafo {
+    int vertices;
+    vector<vector<int>> listaAdjacencia;
+};
+
 // Função para gerar um grafo aleatório com um número específico de vértices e arestas
-vector<pair<int, int>> gerarGrafo(int vertices, int arestas) {
-    vector<pair<int, int>> listaArestas;
-    if (vertices <= 0 || arestas <= 0) return listaArestas;
+Grafo gerarGrafo(int vertices, int arestas) {
+    Grafo grafo;
+    grafo.vertices = vertices;
+    grafo.listaAdjacencia.resize(vertices);
 
     set<pair<int, int>> conjuntoArestas;
     int maxArestas = vertices * (vertices - 1) / 2;
     arestas = min(arestas, maxArestas);
 
-    while (listaArestas.size() < static_cast<size_t>(arestas)){
+    while (conjuntoArestas.size() < static_cast<size_t>(arestas)) {
         int u = rand() % vertices;
         int v = rand() % vertices;
 
@@ -32,17 +39,36 @@ vector<pair<int, int>> gerarGrafo(int vertices, int arestas) {
 
         if (!conjuntoArestas.count({u, v})) {
             conjuntoArestas.insert({u, v});
-            listaArestas.push_back({u, v});
+            grafo.listaAdjacencia[u].push_back(v);
+            grafo.listaAdjacencia[v].push_back(u);
         }
     }
 
-    return listaArestas;
+    return grafo;
+}
+
+// Função para salvar todos os grafos em um único arquivo
+void salvarGrafos(const vector<Grafo>& grafos, const string& nomeArquivo) {
+    ofstream arquivo(nomeArquivo);
+    for (size_t i = 0; i < grafos.size(); ++i) {
+        arquivo << "Grafo " << i << ":\n";  // Começa em 0
+        arquivo << "Vertices: " << grafos[i].vertices << "\n";
+        arquivo << "Arestas:\n";
+        for (int u = 0; u < grafos[i].vertices; ++u) {
+            for (int v : grafos[i].listaAdjacencia[u]) {
+                if (u < v) {  // Para evitar duplicação
+                    arquivo << u << " " << v << "\n";
+                }
+            }
+        }
+        arquivo << "\n";
+    }
 }
 
 int main() {
     srand(time(0));
     const int instancias = 200;
-    const string diretorio = "grafosTeste";
+    const string diretorio = "Grafos";  // Pasta onde os arquivos serão salvos
 
     // Criação de diretório cross-platform
     #ifdef _WIN32
@@ -51,28 +77,19 @@ int main() {
     mkdir(diretorio.c_str(), 0777);
     #endif
 
-    ofstream arquivoTamanhos("tamanhos.txt");
-    ofstream arquivoResultados("resultados.txt");
-
+    vector<Grafo> grafos;
     for (int i = 0; i < instancias; ++i) {
         int vertices = rand() % 19999 + 1; // 1-20000
         int arestas = rand() % 20000;
 
-        int maxArestas = vertices * (vertices - 1) / 2;
-        arestas = min(arestas, maxArestas);
-
-        auto grafo = gerarGrafo(vertices, arestas);
-
-        string nomeArquivo = diretorio + "/grafo" + to_string(i + 1) + ".txt";
-        ofstream arquivo(nomeArquivo);
-        for (auto& aresta : grafo) {
-            arquivo << aresta.first << " " << aresta.second << endl;
-        }
-        arquivo.close();
-
-        arquivoTamanhos << (vertices + arestas) << endl;
-        arquivoResultados << "Grafo " << i << ": " << vertices << "x" << arestas << " | ";
+        Grafo grafo = gerarGrafo(vertices, arestas);
+        grafos.push_back(grafo);
     }
+
+    // Salvar grafos na pasta "Grafos"
+    salvarGrafos(grafos, diretorio + "/grafos.txt");
+
+    cout << "Grafos gerados e salvos em " << diretorio << "/grafos.txt" << endl;
 
     return 0;
 }

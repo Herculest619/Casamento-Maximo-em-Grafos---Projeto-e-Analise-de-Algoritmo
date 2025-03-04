@@ -13,78 +13,73 @@
 using namespace std;
 using namespace std::chrono;
 
+// Struct para representar um grafo usando lista de adjacência
+struct Grafo {
+    int vertices;
+    vector<vector<int>> listaAdjacencia;
+};
+
 class AlgoritmoBlossom {
 public:
-    // Função para ler os tamanhos dos grafos a partir de um arquivo
-    vector<string> lerTamanhos() {
-        vector<string> tamanhos;
-        ifstream arquivo("tamanhos.txt");
-        string linha;
-        while (getline(arquivo, linha)) tamanhos.push_back(linha);
-        return tamanhos;
-    }
-
-    // Função para ler um grafo a partir de um arquivo e retornar sua representação matricial
-    vector<vector<int>> lerGrafo(const string& nomeArquivo, int& verticeMaximo) {
+    // Função para ler os grafos a partir de um arquivo
+    vector<Grafo> lerGrafos(const string& nomeArquivo) {
+        vector<Grafo> grafos;
         ifstream arquivo(nomeArquivo);
-        vector<pair<int, int>> arestas;
-        verticeMaximo = 0;
-
         string linha;
+
         while (getline(arquivo, linha)) {
-            size_t espaco = linha.find(' ');
-            if (espaco == string::npos) continue;
+            if (linha.find("Grafo") != string::npos) {
+                Grafo grafo;
+                getline(arquivo, linha); // Lê a linha "Vertices: X"
+                grafo.vertices = stoi(linha.substr(10));
+                grafo.listaAdjacencia.resize(grafo.vertices);
 
-            int u = stoi(linha.substr(0, espaco));
-            int v = stoi(linha.substr(espaco + 1));
-            arestas.push_back({u, v});
-            verticeMaximo = max(verticeMaximo, max(u, v));
+                getline(arquivo, linha); // Lê a linha "Arestas:"
+                while (getline(arquivo, linha)) {
+                    if (linha.empty()) break; // Fim das arestas
+                    size_t espaco = linha.find(' ');
+                    int u = stoi(linha.substr(0, espaco));
+                    int v = stoi(linha.substr(espaco + 1));
+                    grafo.listaAdjacencia[u].push_back(v);
+                    grafo.listaAdjacencia[v].push_back(u);
+                }
+                grafos.push_back(grafo);
+            }
         }
 
-        vector<vector<int>> grafo(verticeMaximo + 1, vector<int>(verticeMaximo + 1, 0));
-        for (auto& aresta : arestas) {
-            grafo[aresta.first][aresta.second] = 1;
-            grafo[aresta.second][aresta.first] = 1;
-        }
-
-        return grafo;
+        return grafos;
     }
 
-    // Função para encontrar o emparelhamento máximo em um grafo
-    int encontrarEmparelhamentoMaximo(const vector<vector<int>>& grafo, int instancia) {
-        int n = grafo.size();
+    // Função para encontrar o emparelhamento máximo em um grafo e retornar como string
+    string encontrarEmparelhamentoMaximo(const Grafo& grafo, int instancia) {
+        int n = grafo.vertices;
         vector<int> emparelhamento(n, -1);
         int contagem = 0;
 
         for (int u = 0; u < n; ++u) {
             vector<bool> visitado(n, false);
-            if (buscaProfundidade(u, visitado, grafo, emparelhamento)) contagem++;
+            if (buscaProfundidade(u, visitado, grafo.listaAdjacencia, emparelhamento)) contagem++;
         }
 
-        string diretorio = "grafosMaximos";
-        #ifdef _WIN32
-        _mkdir(diretorio.c_str());
-        #else 
-        mkdir(diretorio.c_str(), 0777);
-        #endif
-
-        ofstream arquivo(diretorio + "/subGrafo" + to_string(instancia) + ".txt");
+        // Construir a string com o emparelhamento
+        string resultado = "Grafo " + to_string(instancia) + ":\n";
         for (size_t i = 0; i < emparelhamento.size(); ++i) {
             if (emparelhamento[i] > static_cast<int>(i)) {
-                arquivo << i << " - " << emparelhamento[i] << endl;
+                resultado += to_string(i) + " - " + to_string(emparelhamento[i]) + "\n";
             }
         }
+        resultado += "\n";
 
-        return contagem;
+        return resultado;
     }
 
 private:
     // Função de busca em profundidade para encontrar emparelhamentos
-    bool buscaProfundidade(int u, vector<bool>& visitado, const vector<vector<int>>& grafo, vector<int>& emparelhamento) {
-        for (size_t v = 0; v < grafo.size(); ++v) {
-            if (grafo[u][v] && !visitado[v]) {
+    bool buscaProfundidade(int u, vector<bool>& visitado, const vector<vector<int>>& listaAdjacencia, vector<int>& emparelhamento) {
+        for (int v : listaAdjacencia[u]) {
+            if (!visitado[v]) {
                 visitado[v] = true;
-                if (emparelhamento[v] == -1 || buscaProfundidade(emparelhamento[v], visitado, grafo, emparelhamento)) {
+                if (emparelhamento[v] == -1 || buscaProfundidade(emparelhamento[v], visitado, listaAdjacencia, emparelhamento)) {
                     emparelhamento[v] = u;
                     return true;
                 }
@@ -96,38 +91,42 @@ private:
 
 int main() {
     AlgoritmoBlossom solver;
-    auto tamanhos = solver.lerTamanhos();
-    const int total = 200;
-    vector<int> tamanhosGrafos(total);
+    const string diretorio = "Grafos";  // Pasta onde os arquivos serão salvos
+    const string nomeArquivo = diretorio + "/grafos.txt";
+    auto grafos = solver.lerGrafos(nomeArquivo);
+
+    const int total = grafos.size();
     vector<int> emparelhamentos(total);
     vector<long long> tempos(total);
     long long tempoTotal = 0;
 
-    for (int i = 0; i < total; ++i) {
-        string arquivo = "grafosTeste/grafo" + to_string(i + 1) + ".txt";
-        int verticeMaximo;
-        auto grafo = solver.lerGrafo(arquivo, verticeMaximo);
+    // Arquivo único para salvar todos os subgrafos
+    ofstream arquivoSubgrafos(diretorio + "/subgrafos.txt");
 
+    for (int i = 0; i < total; ++i) {
         auto inicio = high_resolution_clock::now();
-        int emparelhamento = solver.encontrarEmparelhamentoMaximo(grafo, i);
+        string resultado = solver.encontrarEmparelhamentoMaximo(grafos[i], i);
         auto fim = high_resolution_clock::now();
 
         auto duracao = duration_cast<milliseconds>(fim - inicio).count();
 
-        tamanhosGrafos[i] = i < static_cast<int>(tamanhos.size()) ? stoi(tamanhos[i]) : 0;
-        emparelhamentos[i] = emparelhamento / 2;
+        // Salvar o resultado no arquivo único
+        arquivoSubgrafos << resultado;
+
+        emparelhamentos[i] = count(resultado.begin(), resultado.end(), '\n') / 2; // Contar emparelhamentos
         tempos[i] = duracao;
         tempoTotal += duracao;
 
-        cout << "[## " << (i+1) << "/" << total << " ##] Tamanho: " 
-             << tamanhosGrafos[i] << " Emparelhamento: " << emparelhamentos[i] 
+        cout << "[## " << (i+1) << "/" << total << " ##] Vertices: " 
+             << grafos[i].vertices << " Emparelhamento: " << emparelhamentos[i] 
              << " Tempo: " << duracao << "ms\n";
     }
 
-    ofstream resultado("resultados.txt");
-    resultado << "Tempo total: " << tempoTotal << "ms\nTamanhos: ";
-    for (auto tamanho : tamanhosGrafos) resultado << tamanho << " ";
-    resultado << "\nEmparelhamentos: ";
+    arquivoSubgrafos.close();
+
+    // Salvar resultados gerais na pasta "Grafos"
+    ofstream resultado(diretorio + "/resultados.txt");
+    resultado << "Tempo total: " << tempoTotal << "ms\nEmparelhamentos: ";
     for (auto emparelhamento : emparelhamentos) resultado << emparelhamento << " ";
     resultado << "\nTempos: ";
     for (auto tempo : tempos) resultado << tempo << " ";
