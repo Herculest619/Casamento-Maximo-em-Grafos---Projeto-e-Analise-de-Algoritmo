@@ -1,13 +1,13 @@
 #include <iostream>
-#include <fstream>
+#include <fstream> // Usado para manipulação de arquivos
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <chrono>
 #include <cstring>
-#include <sys/stat.h>
+#include <algorithm> // Usado para count. Count é usado para contar o número de emparelhamentos
+#include <chrono>
+#include <sys/stat.h> // Para sistemas Unix/Linux
 #ifdef _WIN32
-#include <direct.h>
+#include <direct.h> // Para Windows
 #endif
 
 using namespace std;
@@ -98,7 +98,6 @@ int main() {
     const int total = grafos.size();
     vector<int> emparelhamentos(total);
     vector<long long> tempos(total);
-    long long tempoTotal = 0;
 
     // Arquivo único para salvar todos os subgrafos
     ofstream arquivoSubgrafos(diretorio + "/subgrafos.txt");
@@ -115,7 +114,6 @@ int main() {
 
         emparelhamentos[i] = count(resultado.begin(), resultado.end(), '\n') / 2; // Contar emparelhamentos
         tempos[i] = duracao;
-        tempoTotal += duracao;
 
         cout << "[## " << (i+1) << "/" << total << " ##] Vertices: " 
              << grafos[i].vertices << " Emparelhamento: " << emparelhamentos[i] 
@@ -126,7 +124,7 @@ int main() {
 
     // Salvar resultados gerais na pasta "Grafos"
     ofstream resultado(diretorio + "/resultados.txt");
-    resultado << "Tempo total: " << tempoTotal << "ms\nEmparelhamentos: ";
+    resultado << "Emparelhamentos: ";
     for (auto emparelhamento : emparelhamentos) resultado << emparelhamento << " ";
     resultado << "\nTempos: ";
     for (auto tempo : tempos) resultado << tempo << " ";
