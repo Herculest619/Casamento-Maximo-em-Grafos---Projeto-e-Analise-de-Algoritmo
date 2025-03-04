@@ -12,37 +12,45 @@ CXXFLAGS = -std=c++11 -O2 -Wall
 LDFLAGS = 
 
 # Sufixo para executáveis no Windows
-EXE_SUFFIX :=
+EXE_SUFFIX := 
 ifeq ($(OS),Windows_NT)
     EXE_SUFFIX := .exe
 endif
 
-# Nomes dos executáveis
-EXECUTABLES = GeradorDeInstancias AlgoritmoDeBlossom
+# Nomes dos executáveis com caminho para a pasta bin
+EXECUTABLES = bin/GeradorDeInstancias bin/AlgoritmoDeBlossom
 
 # Regra padrão (compila tudo)
-all: $(EXECUTABLES)
+all: bin $(EXECUTABLES)
+
+# Criação da pasta bin
+bin:
+ifeq ($(OS),Windows_NT)
+	@if not exist bin mkdir bin
+else
+	mkdir -p bin
+endif
 
 # Regra para compilar o GeradorDeInstancias
-GeradorDeInstancias: src/GeradorDeInstancias.cpp
+bin/GeradorDeInstancias: src/GeradorDeInstancias.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@$(EXE_SUFFIX) $(LDFLAGS)
 
 # Regra para compilar o AlgoritmoDeBlossom
-AlgoritmoDeBlossom: src/AlgoritmoDeBlossom.cpp
+bin/AlgoritmoDeBlossom: src/AlgoritmoDeBlossom.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@$(EXE_SUFFIX) $(LDFLAGS)
 
 # Regra para executar os programas
 run: all
-	./GeradorDeInstancias$(EXE_SUFFIX)
-	./AlgoritmoDeBlossom$(EXE_SUFFIX)
+	./bin/GeradorDeInstancias$(EXE_SUFFIX)
+	./bin/AlgoritmoDeBlossom$(EXE_SUFFIX)
 
 # Regra para limpar os arquivos gerados
 clean:
 ifeq ($(OS),Windows_NT)
-	-del /Q $(EXECUTABLES)$(EXE_SUFFIX) *.o
+	-del /Q bin/$(EXECUTABLES)$(EXE_SUFFIX) *.o
 else
-	-rm -f $(EXECUTABLES)$(EXE_SUFFIX) *.o
+	-rm -f bin/$(EXECUTABLES)$(EXE_SUFFIX) *.o
 endif
 
 # Marca as regras como "phony" (não correspondem a arquivos)
-.PHONY: all clean run
+.PHONY: all clean run bin

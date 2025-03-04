@@ -16,12 +16,17 @@ Dado um grafo G = (V, E), determinar o maior subconjunto de aresta, E′ ⊆ E, 
 projeto/
 │
 ├── bin/
-│   ├── GeradorDeInstancias      (ou GeradorDeInstancias.exe no Windows)
-│   └── AlgoritmoDeBlossom       (ou AlgoritmoDeBlossom.exe no Windows)
+│   ├── GeradorDeInstancias
+│   └── AlgoritmoDeBlossom
 │
 ├── src/
 │   ├── GeradorDeInstancias.cpp
 │   └── AlgoritmoDeBlossom.cpp
+│
+├── Grafos/
+│   ├── grafos.txt
+│   ├── subgrafos.txt
+│   └── resultados.txt
 │
 └── Makefile
 ```
