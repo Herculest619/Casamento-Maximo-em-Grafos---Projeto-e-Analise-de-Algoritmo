@@ -7,12 +7,10 @@ make run
 
 ## O problema
 
-Dado um grafo G = (V, E), determinar o maior subconjunto de aresta, E′ ⊆ E, que formam um casamento.<br>Ou seja, nenhum aresta de E′ compartilham vértices em comum;
+Dado um grafo G = (V, E), determinar o maior subconjunto de aresta, E′ ⊆ E, que formam um casamento. <br>Ou seja, nenhum aresta de E′ compartilham vértices em comum;
 
-
-<img src="imagens/casamento1.png" alt="Exemplo de Grafo" style="width: 35%; height: auto;">
-
-<img src="imagens/casamento2.png" alt="Exemplo de Grafo" style="width: 35%; height: auto;">
+![Exemplo de Grafo](imagens/casamento1.png)
+![Exemplo de Grafo](imagens/casamento2.png)
 
 
 ## Estrutura de arquivos
