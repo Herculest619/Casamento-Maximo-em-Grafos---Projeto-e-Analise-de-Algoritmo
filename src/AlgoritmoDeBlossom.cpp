@@ -4,14 +4,13 @@
 #include <string>
 #include <cstring>
 #include <algorithm> // Usado para count. Count é usado para contar o número de emparelhamentos
-#include <chrono>
+#include <ctime> // Para clock_t
 #include <sys/stat.h> // Para sistemas Unix/Linux
 #ifdef _WIN32
 #include <direct.h> // Para Windows
 #endif
 
 using namespace std;
-using namespace std::chrono;
 
 // Struct para representar um grafo usando lista de adjacência
 struct Grafo {
@@ -97,17 +96,17 @@ int main() {
 
     const int total = grafos.size();
     vector<int> emparelhamentos(total);
-    vector<long long> tempos(total);
+    vector<double> tempos(total); // Usando double para armazenar tempos em segundos
 
     // Arquivo único para salvar todos os subgrafos
     ofstream arquivoSubgrafos(diretorio + "/subgrafos.txt");
 
     for (int i = 0; i < total; ++i) {
-        auto inicio = high_resolution_clock::now();
+        clock_t inicio = clock(); // Inicia a contagem do tempo
         string resultado = solver.encontrarEmparelhamentoMaximo(grafos[i], i);
-        auto fim = high_resolution_clock::now();
+        clock_t fim = clock(); // Finaliza a contagem do tempo
 
-        auto duracao = duration_cast<milliseconds>(fim - inicio).count();
+        double duracao = double(fim - inicio) / CLOCKS_PER_SEC; // Calcula o tempo em segundos
 
         // Salvar o resultado no arquivo único
         arquivoSubgrafos << resultado;
@@ -117,7 +116,7 @@ int main() {
 
         cout << "[## " << (i+1) << "/" << total << " ##] Vertices: " 
              << grafos[i].vertices << " Emparelhamento: " << emparelhamentos[i] 
-             << " Tempo: " << duracao << "ms\n";
+             << " Tempo: " << duracao << "s\n"; // Exibe o tempo em segundos
     }
 
     arquivoSubgrafos.close();
