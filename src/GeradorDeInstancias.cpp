@@ -12,7 +12,12 @@
 #include <direct.h>    // Para Windows
 #endif
 
-using namespace std;
+using namespace std; // Evitar repetição de "std::"
+
+// Variaveis globais
+int instancias = 100;
+int nodes = 100;
+
 
 // Struct para representar um grafo usando lista de adjacência
 struct Grafo {
@@ -67,7 +72,7 @@ void salvarGrafos(const vector<Grafo>& grafos, const string& nomeArquivo) {
 
 int main() {
     srand(time(0));
-    const int instancias = 200;
+    //const int instancias = 200;  // Quantidade de grafos a serem gerados
     const string diretorio = "Grafos";  // Pasta onde os arquivos serão salvos
 
     // Criação de diretório cross-platform
@@ -77,10 +82,14 @@ int main() {
     mkdir(diretorio.c_str(), 0777);
     #endif
 
+    nodes -= 1; // Para evitar grafos com 0 vértices
     vector<Grafo> grafos;
     for (int i = 0; i < instancias; ++i) {
-        int vertices = rand() % 19999 + 1; // 1-20000
-        int arestas = rand() % 20000;
+        int vertices = rand() % nodes + 1; // Número de vértices entre 1 e nodes
+        int maxArestas = (vertices * (vertices - 1)) / 2; // Máximo de arestas permitido
+        int arestas = rand() % (maxArestas + 1); // Garante que está no intervalo válido
+
+        cout << "Grafo " << i << ": " << vertices << " vértices e " << arestas << " arestas\n";
 
         Grafo grafo = gerarGrafo(vertices, arestas);
         grafos.push_back(grafo);
@@ -89,7 +98,7 @@ int main() {
     // Salvar grafos na pasta "Grafos"
     salvarGrafos(grafos, diretorio + "/grafos.txt");
 
-    cout << "Grafos gerados e salvos em " << diretorio << "/grafos.txt" << endl;
+    cout << "Grafos gerados e salvos em " << diretorio << "/grafos.txt\n\n" << endl;
 
     return 0;
 }
