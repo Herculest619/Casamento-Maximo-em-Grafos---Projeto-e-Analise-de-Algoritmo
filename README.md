@@ -29,10 +29,18 @@ projeto/
 │   └── AlgoritmoDeBlossom.cpp
 │
 ├── Grafos/
-│   ├── grafos.txt
-│   ├── subgrafos.txt
-│   └── resultados.txt
+│   ├── grafos_0.txt
+│   ├── grafos_1.txt
+│   ├   ...
+│   └── grafos_n.txt
 │
+├── Emaprelhamentos/
+│   ├── emparelhamento_0.txt
+│   ├── emparelhamento_1.txt
+│   ├   ...
+│   └── emparelhamento_n.txt
+│
+├── resultados.txt
 └── Makefile
 ```
 
