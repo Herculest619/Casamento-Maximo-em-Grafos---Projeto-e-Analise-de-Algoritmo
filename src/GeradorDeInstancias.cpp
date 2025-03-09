@@ -1,5 +1,3 @@
-// Hércules Aparecido Teixeira - 18.2.8072
-
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -9,42 +7,50 @@
 #include <utility>
 #include <string>
 #include <algorithm>
-#include <random> // Para geração de números aleatórios de alta qualidade
-#include <sys/stat.h>  // Para sistemas Unix/Linux
+#include <random>
+#include <sys/stat.h>
 #ifdef _WIN32
-#include <direct.h>    // Para Windows
+#include <direct.h>
 #endif
 
 using namespace std;
 
-// Variáveis globais
-int instancias = 100;
-int nodes = 10000; // Número máximo de vértices e arestas(Estava inutilizando o uso de ((n(n-1))/2) para o número de arestas)
+int instancias = 5;
+int nodes = 100000; // Número máximo de vértices permitido
 
-// Struct para representar um grafo usando lista de adjacência
 struct Grafo {
     int vertices;
     vector<vector<int>> listaAdjacencia;
 };
 
-// Função para gerar um grafo aleatório com um número específico de vértices e arestas
+// Função para gerar um grafo aleatório
 Grafo gerarGrafo(int vertices, int arestas, mt19937& gen) {
     Grafo grafo;
     grafo.vertices = vertices;
     grafo.listaAdjacencia.resize(vertices);
 
-    set<pair<int, int>> conjuntoArestas;
-    uniform_int_distribution<int> distrib(0, vertices - 1); // Distribuição uniforme para vértices
+    if (vertices <= 1) {
+        return grafo; // Sem arestas se vertices for 0 ou 1
+    }
 
-    while (conjuntoArestas.size() < static_cast<size_t>(arestas)) {
+    // Calcula o número máximo de arestas possível
+    long long max_arestas_possivel = (long long)vertices * (vertices - 1) / 2;
+
+    if (arestas > max_arestas_possivel) {
+        cerr << "Erro: Numero de arestas (" << arestas << ") excede o maximo permitido (" << max_arestas_possivel << "). Ajustando para o maximo." << endl;
+        arestas = max_arestas_possivel;
+    }
+
+    set<pair<int, int>> arestas_geradas;
+    uniform_int_distribution<int> distrib(0, vertices - 1);
+
+    while ((int)arestas_geradas.size() < arestas) {
         int u = distrib(gen);
         int v = distrib(gen);
-
-        if (u == v) continue; // Evita laços (arestas do tipo u-u)
-        if (u > v) swap(u, v); // Garante que u < v para evitar duplicação
-
-        if (!conjuntoArestas.count({u, v})) {
-            conjuntoArestas.insert({u, v});
+        if (u == v) continue; // Ignora laços
+        if (u > v) swap(u, v); // Garante u < v para evitar duplicatas
+        pair<int, int> aresta(u, v);
+        if (arestas_geradas.insert(aresta).second) {
             grafo.listaAdjacencia[u].push_back(v);
             grafo.listaAdjacencia[v].push_back(u);
         }
@@ -53,62 +59,53 @@ Grafo gerarGrafo(int vertices, int arestas, mt19937& gen) {
     return grafo;
 }
 
-// Função para salvar todos os grafos em um único arquivo
-void salvarGrafos(const vector<Grafo>& grafos, const string& nomeArquivo) {
+// Função para salvar um grafo em um arquivo
+void salvarGrafoIndividual(const Grafo& grafo, int index, const string& diretorio) {
+    string nomeArquivo = diretorio + "/grafo_" + to_string(index) + ".txt";
     ofstream arquivo(nomeArquivo);
-    for (size_t i = 0; i < grafos.size(); ++i) {
-        arquivo << "Grafo " << i << ":\n";  // Começa em 0
-        arquivo << "Vertices: " << grafos[i].vertices << "\n";
-        arquivo << "Arestas:\n";
-        for (int u = 0; u < grafos[i].vertices; ++u) {
-            for (int v : grafos[i].listaAdjacencia[u]) {
-                if (u < v) {  // Para evitar duplicação
-                    arquivo << u << " " << v << "\n";
-                }
+    arquivo << "Vertices: " << grafo.vertices << "\n";
+    arquivo << "Arestas:\n";
+    for (int u = 0; u < grafo.vertices; ++u) {
+        for (int v : grafo.listaAdjacencia[u]) {
+            if (u < v) { // Garante que cada aresta seja escrita uma vez
+                arquivo << u << " " << v << "\n";
             }
         }
-        arquivo << "\n";
     }
+    arquivo.close();
 }
 
+// Função principal
 int main() {
-    // Inicialização do gerador de números aleatórios
-    random_device rd; // Dispositivo de entropia para semente
-    mt19937 gen(rd()); // Gerador Mersenne Twister
-    uniform_int_distribution<int> distribVertices(1, nodes); // Distribuição para vértices
+    random_device rd;
+    mt19937 gen(rd()); // Usar random_device para melhor aleatoriedade
 
-    const string diretorio = "Grafos";  // Pasta onde os arquivos serão salvos
+    uniform_int_distribution<int> distribVertices(1, nodes);
+    const string diretorio = "Grafos";
 
-    // Criação de diretório cross-platform
     #ifdef _WIN32
     _mkdir(diretorio.c_str());
     #else 
     mkdir(diretorio.c_str(), 0777);
     #endif
 
-    // Iniciar a contagem de tempo
     clock_t start = clock();
 
-    vector<Grafo> grafos;
+    // Gera os grafos e salva em arquivos
     for (int i = 0; i < instancias; ++i) {
-        int vertices = distribVertices(gen); // Número de vértices entre 1 e nodes
-        int arestas = vertices; // Número de arestas igual ao número de vértices
-
-        cout << "Grafo " << i << ": " << vertices << " vertices e " << arestas << " arestas\n";
+        int vertices = distribVertices(gen);
+        uniform_int_distribution<int> distribArestas(0, vertices - 1);
+        int arestas = distribArestas(gen);
 
         Grafo grafo = gerarGrafo(vertices, arestas, gen);
-        grafos.push_back(grafo);
+        salvarGrafoIndividual(grafo, i, diretorio);
+
+        cout << "Grafo " << i << ": " << vertices << " vertices e " << arestas << " arestas\n";
     }
 
-    // Salvar grafos na pasta "Grafos"
-    salvarGrafos(grafos, diretorio + "/grafos.txt");
-
-    // Calcular e exibir o tempo total
     clock_t end = clock();
     double tempo = static_cast<double>(end - start) / CLOCKS_PER_SEC;
-    cout << "Tempo total: " << tempo << " segundos\n";
-
-    cout << "Grafos gerados e salvos em " << diretorio << "/grafos.txt\n\n" << endl;
+    cout << "Tempo total: " << tempo << " segundos\n\n";
 
     return 0;
 }
