@@ -49,10 +49,14 @@ projeto/
 Devido a limitações de memória, estamos adotando grafos com uma quantidade equilibrada de vértices e arestas. Isso significa que, para um grafo com n vértices, geramos n arestas. Essa abordagem garante que o algoritmo possa ser executado de forma eficiente sem exceder os recursos disponíveis.
 
 ## Exemplos
+![1](imagens/grafo_exemplo.png)
+![2](imagens/emparelhamento_exemplo.png)
+![3](imagens/resultados_exemplo.png)
 
-<img src="imagens/grafo_exemplo.png" alt="Grafo Exemplo" width="300" />
-<img src="imagens/emparelhamento_exemplo.png" alt="Emparelhamento Exemplo" width="400" />
-<img src="imagens/resultados_exemplo.png" alt="Resultados Exemplo" width="420" />
+
+![Grafo Exemplo](imagens/grafo_exemplo.png){: width="300" }
+![Emparelhamento Exemplo](imagens/emparelhamento_exemplo.png){: width="300" }
+![Resultados Exemplo](imagens/resultados_exemplo.png){: width="500" }
 
 
 ## Resultados
