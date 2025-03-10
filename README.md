@@ -48,6 +48,13 @@ projeto/
 
 Devido a limitações de memória, estamos adotando grafos com uma quantidade equilibrada de vértices e arestas. Isso significa que, para um grafo com n vértices, geramos n arestas. Essa abordagem garante que o algoritmo possa ser executado de forma eficiente sem exceder os recursos disponíveis.
 
+## Exemplos
+
+<img src="imagens/grafo_exemplo.png" alt="Grafo Exemplo" width="300" />
+<img src="imagens/emparelhamento_exemplo.png" alt="Emparelhamento Exemplo" width="400" />
+<img src="imagens/resultados_exemplo.png" alt="Resultados Exemplo" width="420" />
+
+
 ## Resultados
 
 ![Gráficos de Dispersão](imagens/Gráficos_200k.png)

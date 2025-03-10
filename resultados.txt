@@ -1,5 +1,0 @@
-Tempo total: 0ms
-Vertices: 7 
-Arestas: 5 
-Emparelhamentos: 3 
-Tempos: 0 
