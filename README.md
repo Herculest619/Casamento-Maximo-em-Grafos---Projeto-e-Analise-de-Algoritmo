@@ -47,3 +47,7 @@ projeto/
 ## Detalhes sobre o tamanho dos grafos
 
 Devido a limitações de memória, estamos adotando grafos com uma quantidade equilibrada de vértices e arestas. Isso significa que, para um grafo com n vértices, geramos n arestas. Essa abordagem garante que o algoritmo possa ser executado de forma eficiente sem exceder os recursos disponíveis.
+
+## Resultados
+
+![Gráficos de Dispersão](imagens/Gráficos_200k.png)

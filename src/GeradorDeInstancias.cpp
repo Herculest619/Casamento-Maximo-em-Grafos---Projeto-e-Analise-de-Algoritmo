@@ -15,8 +15,8 @@
 
 using namespace std;
 
-int instancias = 500; // Número de instâncias a serem geradas
-int nodes = 100000; // Número máximo de vértices permitido
+int instancias = 1; // Número de instâncias a serem geradas
+int nodes = 10; // Número máximo de vértices permitido
 
 struct Grafo {
     int vertices;
@@ -31,14 +31,6 @@ Grafo gerarGrafo(int vertices, int arestas, mt19937& gen) {
 
     if (vertices <= 1) {
         return grafo; // Sem arestas se vertices for 0 ou 1
-    }
-
-    // Calcula o número máximo de arestas possível
-    long long max_arestas_possivel = (long long)vertices * (vertices - 1) / 2;
-
-    if (arestas > max_arestas_possivel) {
-        cerr << "Erro: Numero de arestas (" << arestas << ") excede o maximo permitido (" << max_arestas_possivel << "). Ajustando para o maximo." << endl;
-        arestas = max_arestas_possivel;
     }
 
     set<pair<int, int>> arestas_geradas;
@@ -77,8 +69,9 @@ void salvarGrafoIndividual(const Grafo& grafo, int index, const string& diretori
 
 // Função principal
 int main() {
-    random_device rd;
-    mt19937 gen(rd()); // Usar random_device para melhor aleatoriedade
+    // Usa o tempo atual como semente para o gerador de números aleatórios
+    unsigned seed = std::time(nullptr);
+    mt19937 gen(seed); // Inicializa o gerador com a semente baseada no tempo
 
     uniform_int_distribution<int> distribVertices(1, nodes);
     const string diretorio = "Grafos";
