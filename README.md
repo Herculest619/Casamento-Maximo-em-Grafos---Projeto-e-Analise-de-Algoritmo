@@ -54,11 +54,6 @@ Devido a limitações de memória, estamos adotando grafos com uma quantidade eq
 ![3](imagens/resultados_exemplo.png)
 
 
-![Grafo Exemplo](imagens/grafo_exemplo.png){: width="300" }
-![Emparelhamento Exemplo](imagens/emparelhamento_exemplo.png){: width="300" }
-![Resultados Exemplo](imagens/resultados_exemplo.png){: width="500" }
-
-
 ## Resultados
 
 ![Gráficos de Dispersão](imagens/Gráficos_200k.png)
