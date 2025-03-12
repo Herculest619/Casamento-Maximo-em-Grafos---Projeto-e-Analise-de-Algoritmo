@@ -27,26 +27,26 @@ struct Grafo {
 };
 
 // Função para listar todos os arquivos .txt na pasta "Grafos"
-vector<string> listarArquivosGrafos(const string& diretorio) {
+vector<string> listarArquivosDeGrafos(const string& diretorio) {
     vector<string> arquivos;
     DIR *dir;
-    struct dirent *ent;
+    struct dirent *entrada;
 
     if ((dir = opendir(diretorio.c_str())) != nullptr) {
-        while ((ent = readdir(dir)) != nullptr) {
-            string nomeArquivo = ent->d_name;
+        while ((entrada = readdir(dir)) != nullptr) {
+            string nomeArquivo = entrada->d_name;
             if (nomeArquivo.find("grafo_") != string::npos && nomeArquivo.find(".txt") != string::npos) {
                 arquivos.push_back(diretorio + "/" + nomeArquivo);
             }
         }
         closedir(dir);
     } else {
-        cerr << "Erro: Nao foi possivel abrir o diretorio " << diretorio << endl;
+        cerr << "Erro: Não foi possível abrir o diretório " << diretorio << endl;
     }
     return arquivos;
 }
 
-class AlgoritmoBlossom {
+class AlgoritmoDeBlossom{
 public:
     // Lê o grafo a partir do arquivo
     Grafo lerGrafo(const string& nomeArquivo) {
@@ -55,18 +55,18 @@ public:
         string linha;
 
         if (!arquivo.is_open()) {
-            cerr << "Erro: Arquivo " << nomeArquivo << " nao encontrado." << endl;
+            cerr << "Erro: Arquivo " << nomeArquivo << " não encontrado." << endl;
             return grafo;
         }
 
         // Lê o número de vértices
         if (!getline(arquivo, linha)) {
-            cerr << "Erro: Arquivo vazio ou invalido (" << nomeArquivo << ")" << endl;
+            cerr << "Erro: Arquivo vazio ou inválido (" << nomeArquivo << ")" << endl;
             return grafo;
         }
         size_t pos = linha.find("Vertices: ");
         if (pos == string::npos) {
-            cerr << "Erro: Formato invalido em " << nomeArquivo << endl;
+            cerr << "Erro: Formato inválido em " << nomeArquivo << endl;
             return grafo;
         }
         grafo.vertices = stoi(linha.substr(pos + 10));
@@ -77,7 +77,7 @@ public:
 
         // Lê as arestas
         if (!getline(arquivo, linha) || linha.find("Arestas:") == string::npos) {
-            cerr << "Erro: Secao de arestas faltante em " << nomeArquivo << endl;
+            cerr << "Erro: Seção de arestas faltante em " << nomeArquivo << endl;
             return grafo;
         }
 
@@ -95,145 +95,148 @@ public:
     }
 
     // Implementação do algoritmo de Edmonds (Blossom) para emparelhamento máximo
-    vector<int> edmondsBlossom(const Grafo &grafo) {
+    vector<int> aplicarBlossom(const Grafo &grafo) {
         int n = grafo.vertices;
         vector<vector<int>> g = grafo.listaAdjacencia;
-        vector<int> match(n, -1), p(n), base(n); // match: emparelhamento, p: pais, base: base do blossom
-        vector<bool> used(n), blossom(n); // used: vértices visitados, blossom: vértices no blossom
+        vector<int> emparelhamento(n, -1), pai(n), base(n); // emparelhamento: resultado; pai: predecessores; base: base do blossom
+        vector<bool> usado(n), flor(n); // usado: vértices visitados; flor: vértices contraídos no blossom
 
-        // Função lambda para calcular o ancestral comum mínimo (LCA) entre dois vértices
-        auto lca = [&](int a, int b) -> int {
-            vector<bool> usedL(n, false);
+        // Função lambda para calcular o ancestral comum mínimo (ACM) entre dois vértices
+        // ACM: vértice mais próximo do início de um caminho
+        auto calcularACM = [&](int a, int b) -> int {
+            vector<bool> usadoLocal(n, false);
             while (true) {
                 a = base[a];
-                usedL[a] = true;
-                if (match[a] == -1) break;
-                a = p[match[a]];
+                usadoLocal[a] = true;
+                if (emparelhamento[a] == -1) break;
+                a = pai[emparelhamento[a]];
             }
             while (true) {
                 b = base[b];
-                if (usedL[b])
+                if (usadoLocal[b])
                     return b;
-                b = p[match[b]];
+                b = pai[emparelhamento[b]];
             }
         };
 
         // Função lambda para marcar os caminhos (usada na contração de blossoms)
-        auto markPath = [&](int v, int b, int x, queue<int>& q) {
+        // contração de blossom: redução de um ciclo ímpar para um vértice
+        auto marcarCaminho = [&](int v, int b, int x, queue<int>& fila) {
             while (base[v] != b) {
-                blossom[base[v]] = blossom[base[match[v]]] = true;
-                p[v] = x;
-                x = match[v];
-                if (!used[x]) {
-                    used[x] = true;
-                    q.push(x);
+                flor[base[v]] = flor[base[emparelhamento[v]]] = true;
+                pai[v] = x;
+                x = emparelhamento[v];
+                if (!usado[x]) {
+                    usado[x] = true;
+                    fila.push(x);
                 }
-                v = p[match[v]];
+                v = pai[emparelhamento[v]];
             }
         };
 
         // Função lambda para buscar um caminho aumentante a partir de um vértice s
-        auto findPath = [&](int s) -> int {
-            used.assign(n, false);
-            p.assign(n, -1);
+        // Caminho aumentante é um caminho que começa e termina em vértices não emparelhados
+        auto buscarCaminho = [&](int s) -> int {
+            usado.assign(n, false);
+            pai.assign(n, -1);
             for (int i = 0; i < n; i++) {
                 base[i] = i;
             }
-            queue<int> q;
-            q.push(s);
-            used[s] = true;
-            while (!q.empty()) {
-                int v = q.front();
-                q.pop();
+            queue<int> fila;
+            fila.push(s);
+            usado[s] = true;
+            while (!fila.empty()) {
+                int v = fila.front();
+                fila.pop();
                 for (int u : g[v]) {
-                    if (base[v] == base[u] || match[v] == u)
+                    if (base[v] == base[u] || emparelhamento[v] == u)
                         continue;
-                    if (u == s || (match[u] != -1 && p[match[u]] != -1)) {
-                        int cur = lca(v, u);
-                        blossom.assign(n, false);
-                        markPath(v, cur, u, q);
-                        markPath(u, cur, v, q);
+                    if (u == s || (emparelhamento[u] != -1 && pai[emparelhamento[u]] != -1)) {
+                        int atual = calcularACM(v, u);
+                        flor.assign(n, false);
+                        marcarCaminho(v, atual, u, fila);
+                        marcarCaminho(u, atual, v, fila);
                         for (int i = 0; i < n; i++) {
-                            if (blossom[base[i]]) {
-                                base[i] = cur;
-                                if (!used[i]) {
-                                    used[i] = true;
-                                    q.push(i);
+                            if (flor[base[i]]) {
+                                base[i] = atual;
+                                if (!usado[i]) {
+                                    usado[i] = true;
+                                    fila.push(i);
                                 }
                             }
                         }
-                    } else if (p[u] == -1) {
-                        p[u] = v;
-                        if (match[u] == -1)
+                    } else if (pai[u] == -1) {
+                        pai[u] = v;
+                        if (emparelhamento[u] == -1)
                             return u;
-                        used[match[u]] = true;
-                        q.push(match[u]);
+                        usado[emparelhamento[u]] = true;
+                        fila.push(emparelhamento[u]);
                     }
                 }
             }
             return -1;
         };
 
-        // Para cada vértice não emparelhado, tentamos encontrar um caminho aumentante
+        // Para cada vértice não emparelhado, tenta encontrar um caminho aumentante
         for (int i = 0; i < n; i++) {
-            if (match[i] == -1) {
-                int v = findPath(i);
+            if (emparelhamento[i] == -1) {
+                int v = buscarCaminho(i);
                 if (v != -1) {
-                    // Quando um caminho aumentante é encontrado, atualizamos o emparelhamento
-                    int cur = v;
-                    while (cur != -1) {
-                        int pv = p[cur];
-                        int nxt = match[pv];
-                        match[cur] = pv;
-                        match[pv] = cur;
-                        cur = nxt;
+                    // Quando um caminho aumentante é encontrado, atualiza o emparelhamento
+                    int atual = v;
+                    while (atual != -1) {
+                        int pred = pai[atual];
+                        int proximo = emparelhamento[pred];
+                        emparelhamento[atual] = pred;
+                        emparelhamento[pred] = atual;
+                        atual = proximo;
                     }
                 }
             }
         }
-        return match;
+        return emparelhamento;
     }
 
-    // Função que chama o blossom, gera a saída e preenche o contador de emparelhamentos
-    string encontrarEmparelhamentoMaximo(const Grafo& grafo, int instancia, int &contagemEmparelhamentos) {
-        vector<int> match = edmondsBlossom(grafo);
-        int count = 0;
+    // Função que chama o Blossom, gera a saída e preenche o contador de emparelhamentos
+    string obterEmparelhamentoMaximo(const Grafo& grafo, int instancia, int &contadorEmparelhamentos) {
+        vector<int> emparelhamento = aplicarBlossom(grafo);
+        int contagem = 0;
         string resultado = "Grafo " + to_string(instancia) + ":\n";
-        resultado += "Vertices: " + to_string(grafo.vertices) + "\n";
+        resultado += "Vértices: " + to_string(grafo.vertices) + "\n";
         resultado += "Arestas: " + to_string(grafo.arestas) + "\n";
         resultado += "Emparelhamentos:\n";
-        // Apenas imprime cada aresta do emparelhamento uma única vez
+        // Imprime cada aresta do emparelhamento apenas uma vez
         for (int i = 0; i < grafo.vertices; i++) {
-            if (match[i] != -1 && i < match[i]) {
-                resultado += to_string(i) + " - " + to_string(match[i]) + "\n";
-                count++;
+            if (emparelhamento[i] != -1 && i < emparelhamento[i]) {
+                resultado += to_string(i) + " - " + to_string(emparelhamento[i]) + "\n";
+                contagem++;
             }
         }
-        resultado += "Total de emparelhamentos: " + to_string(count) + "\n\n";
-        contagemEmparelhamentos = count;
+        resultado += "Total de emparelhamentos: " + to_string(contagem) + "\n\n";
+        contadorEmparelhamentos = contagem;
         return resultado;
     }
 };
 
 int main() {
-    AlgoritmoBlossom solver;
-    const string dirGrafos = "Grafos";
-    const string dirEmparelhamentos = "Emparelhamentos";
+    AlgoritmoDeBlossom algoritmo;
+    const string pastaGrafos = "Grafos";
+    const string pastaEmparelhamentos = "Emparelhamentos";
 
     // Lista os arquivos de grafos
-    vector<string> arquivosGrafos = listarArquivosGrafos(dirGrafos);
-    int totalGrafos = arquivosGrafos.size();
+    vector<string> arquivosDeGrafos = listarArquivosDeGrafos(pastaGrafos);
+    int totalGrafos = arquivosDeGrafos.size();
 
     if (totalGrafos == 0) {
-        cerr << "Nenhum arquivo de grafo encontrado na pasta " << dirGrafos << endl;
+        cerr << "Nenhum arquivo de grafo encontrado na pasta " << pastaGrafos << endl;
         return 1;
     }
 
     // Cria o diretório para os emparelhamentos (se não existir)
     #ifdef _WIN32
-    _mkdir(dirEmparelhamentos.c_str());
+    _mkdir(pastaEmparelhamentos.c_str());
     #else 
-    mkdir(dirEmparelhamentos.c_str(), 0777);
+    mkdir(pastaEmparelhamentos.c_str(), 0777);
     #endif
 
     vector<int> temposProcessamento;
@@ -242,34 +245,34 @@ int main() {
     vector<int> vetorArestas;
 
     // Processa cada grafo
-    for (size_t i = 0; i < arquivosGrafos.size(); i++) {
-        string caminhoGrafo = arquivosGrafos[i];
-        Grafo grafo = solver.lerGrafo(caminhoGrafo);
+    for (size_t i = 0; i < arquivosDeGrafos.size(); i++) {
+        string caminhoGrafo = arquivosDeGrafos[i];
+        Grafo grafo = algoritmo.lerGrafo(caminhoGrafo);
 
         // Extrai o índice a partir do nome do arquivo (ex.: "grafo_3.txt")
         size_t inicio = caminhoGrafo.find_last_of("_") + 1;
         size_t fim = caminhoGrafo.find_last_of(".");
         int indice = stoi(caminhoGrafo.substr(inicio, fim - inicio));
 
-        clock_t inicioTempo = clock();
-        int contagemEmparelhamentos = 0;
-        string resultado = solver.encontrarEmparelhamentoMaximo(grafo, indice, contagemEmparelhamentos);
-        clock_t fimTempo = clock();
-        double tempoProcessamento = double(fimTempo - inicioTempo) / CLOCKS_PER_SEC;
+        clock_t tempoInicio = clock();
+        int contadorEmparelhamentos = 0;
+        string resultado = algoritmo.obterEmparelhamentoMaximo(grafo, indice, contadorEmparelhamentos); // Executa o algoritmo de Blossom
+        clock_t tempoFim = clock();
+        double tempoProcessamento = double(tempoFim - tempoInicio) / CLOCKS_PER_SEC;
 
         // Salva o resultado do emparelhamento em um arquivo
-        string caminhoEmparelhamento = dirEmparelhamentos + "/emparelhamento_" + to_string(indice) + ".txt";
+        string caminhoEmparelhamento = pastaEmparelhamentos + "/emparelhamento_" + to_string(indice) + ".txt";
         ofstream arquivo(caminhoEmparelhamento);
         arquivo << resultado;
         arquivo.close();
 
         cout << "Processado grafo " << indice << " (" << (i+1) << "/" << totalGrafos << ") "
              << "Vertices: " << grafo.vertices << " Arestas: " << grafo.arestas << " "
-             << "Emparelhamentos: " << contagemEmparelhamentos << " "
+             << "Emparelhamentos: " << contadorEmparelhamentos << " "
              << "Tempo: " << tempoProcessamento << "s\n";
 
         temposProcessamento.push_back(static_cast<int>(tempoProcessamento * 1000));
-        emparelhamentosTotais.push_back(contagemEmparelhamentos);
+        emparelhamentosTotais.push_back(contadorEmparelhamentos);
         vetorVertices.push_back(grafo.vertices);
         vetorArestas.push_back(grafo.arestas);
     }

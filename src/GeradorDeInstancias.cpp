@@ -17,8 +17,8 @@
 
 using namespace std;
 
-int instancias = 1; // Número de instâncias a serem geradas
-int nodes = 10; // Número máximo de vértices permitido
+int instancias = 500; // Número de instâncias a serem geradas
+int nodes = 200000; // Número máximo de vértices permitido
 
 struct Grafo {
     int vertices;
