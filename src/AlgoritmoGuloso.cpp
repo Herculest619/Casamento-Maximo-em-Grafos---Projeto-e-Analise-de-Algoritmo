@@ -10,7 +10,6 @@
 #include <numeric> // Para accumulate
 #include <sys/stat.h> // Para criar diretórios
 #include <dirent.h> // Para listar arquivos no diretório
-#include <queue> // Para a busca de caminhos aumentantes
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -46,7 +45,7 @@ vector<string> listarArquivosGrafos(const string& diretorio) {
     return arquivos;
 }
 
-class AlgoritmoBlossom {
+class AlgoritmoGuloso {
 public:
     // Lê o grafo a partir do arquivo
     Grafo lerGrafo(const string& nomeArquivo) {
@@ -94,99 +93,19 @@ public:
         return grafo;
     }
 
-    // Implementação do algoritmo de Edmonds (Blossom) para emparelhamento máximo
-    vector<int> edmondsBlossom(const Grafo &grafo) {
+    // Implementação gulosa para emparelhamento:
+    // Para cada vértice não emparelhado, emparelha-o com o primeiro vizinho livre.
+    vector<int> emparelhamentoGuloso(const Grafo &grafo) {
         int n = grafo.vertices;
-        vector<vector<int>> g = grafo.listaAdjacencia;
-        vector<int> match(n, -1), p(n), base(n); // match: emparelhamento, p: pais, base: base do blossom
-        vector<bool> used(n), blossom(n); // used: vértices visitados, blossom: vértices no blossom
+        vector<int> match(n, -1);
 
-        // Função lambda para calcular o ancestral comum mínimo (LCA) entre dois vértices
-        auto lca = [&](int a, int b) -> int {
-            vector<bool> usedL(n, false);
-            while (true) {
-                a = base[a];
-                usedL[a] = true;
-                if (match[a] == -1) break;
-                a = p[match[a]];
-            }
-            while (true) {
-                b = base[b];
-                if (usedL[b])
-                    return b;
-                b = p[match[b]];
-            }
-        };
-
-        // Função lambda para marcar os caminhos (usada na contração de blossoms)
-        auto markPath = [&](int v, int b, int x, queue<int>& q) {
-            while (base[v] != b) {
-                blossom[base[v]] = blossom[base[match[v]]] = true;
-                p[v] = x;
-                x = match[v];
-                if (!used[x]) {
-                    used[x] = true;
-                    q.push(x);
-                }
-                v = p[match[v]];
-            }
-        };
-
-        // Função lambda para buscar um caminho aumentante a partir de um vértice s
-        auto findPath = [&](int s) -> int {
-            used.assign(n, false);
-            p.assign(n, -1);
-            for (int i = 0; i < n; i++) {
-                base[i] = i;
-            }
-            queue<int> q;
-            q.push(s);
-            used[s] = true;
-            while (!q.empty()) {
-                int v = q.front();
-                q.pop();
-                for (int u : g[v]) {
-                    if (base[v] == base[u] || match[v] == u)
-                        continue;
-                    if (u == s || (match[u] != -1 && p[match[u]] != -1)) {
-                        int cur = lca(v, u);
-                        blossom.assign(n, false);
-                        markPath(v, cur, u, q);
-                        markPath(u, cur, v, q);
-                        for (int i = 0; i < n; i++) {
-                            if (blossom[base[i]]) {
-                                base[i] = cur;
-                                if (!used[i]) {
-                                    used[i] = true;
-                                    q.push(i);
-                                }
-                            }
-                        }
-                    } else if (p[u] == -1) {
-                        p[u] = v;
-                        if (match[u] == -1)
-                            return u;
-                        used[match[u]] = true;
-                        q.push(match[u]);
-                    }
-                }
-            }
-            return -1;
-        };
-
-        // Para cada vértice não emparelhado, tentamos encontrar um caminho aumentante
         for (int i = 0; i < n; i++) {
             if (match[i] == -1) {
-                int v = findPath(i);
-                if (v != -1) {
-                    // Quando um caminho aumentante é encontrado, atualizamos o emparelhamento
-                    int cur = v;
-                    while (cur != -1) {
-                        int pv = p[cur];
-                        int nxt = match[pv];
-                        match[cur] = pv;
-                        match[pv] = cur;
-                        cur = nxt;
+                for (int u : grafo.listaAdjacencia[i]) {
+                    if (match[u] == -1) {
+                        match[i] = u;
+                        match[u] = i;
+                        break;
                     }
                 }
             }
@@ -194,14 +113,14 @@ public:
         return match;
     }
 
-    // Função que chama o blossom, gera a saída e preenche o contador de emparelhamentos
+    // Função que chama o emparelhamento guloso, gera a saída e preenche o contador de emparelhamentos
     string encontrarEmparelhamentoMaximo(const Grafo& grafo, int instancia, int &contagemEmparelhamentos) {
-        vector<int> match = edmondsBlossom(grafo);
+        vector<int> match = emparelhamentoGuloso(grafo);
         int count = 0;
         string resultado = "Grafo " + to_string(instancia) + ":\n";
         resultado += "Vertices: " + to_string(grafo.vertices) + "\n";
         resultado += "Arestas: " + to_string(grafo.arestas) + "\n";
-        resultado += "Emparelhamentos:\n";
+        resultado += "Emparelhamentos (metodologia gulosa):\n";
         // Apenas imprime cada aresta do emparelhamento uma única vez
         for (int i = 0; i < grafo.vertices; i++) {
             if (match[i] != -1 && i < match[i]) {
@@ -216,7 +135,7 @@ public:
 };
 
 int main() {
-    AlgoritmoBlossom solver;
+    AlgoritmoGuloso solver;
     const string dirGrafos = "Grafos";
     const string dirEmparelhamentos = "Emparelhamentos";
 

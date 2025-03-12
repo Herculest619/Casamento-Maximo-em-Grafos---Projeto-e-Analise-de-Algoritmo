@@ -1,3 +1,5 @@
+// Hércules Aparecido Teixeira - 18.2.8072
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -67,7 +69,6 @@ void salvarGrafoIndividual(const Grafo& grafo, int index, const string& diretori
     arquivo.close();
 }
 
-// Função principal
 int main() {
     // Usa o tempo atual como semente para o gerador de números aleatórios
     unsigned seed = std::time(nullptr);
@@ -87,6 +88,8 @@ int main() {
     // Gera os grafos e salva em arquivos
     for (int i = 0; i < instancias; ++i) {
         int vertices = distribVertices(gen);
+
+        // Arestas aleatórias entre 0 e vertices - 1
         uniform_int_distribution<int> distribArestas(0, vertices - 1);
         int arestas = distribArestas(gen);
 
