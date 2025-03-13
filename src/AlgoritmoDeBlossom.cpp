@@ -28,9 +28,9 @@ struct Grafo {
 
 // Função para listar todos os arquivos .txt na pasta "Grafos"
 vector<string> listarArquivosDeGrafos(const string& diretorio) {
-    vector<string> arquivos;
-    DIR *dir;
-    struct dirent *entrada;
+    vector<string> arquivos; // Vetor para armazenar os arquivos .txt
+    DIR *dir; // Ponteiro para o diretório
+    struct dirent *entrada; // Estrutura para armazenar as entradas do diretório
 
     if ((dir = opendir(diretorio.c_str())) != nullptr) {
         while ((entrada = readdir(dir)) != nullptr) {
@@ -48,7 +48,7 @@ vector<string> listarArquivosDeGrafos(const string& diretorio) {
 
 class AlgoritmoDeBlossom{
 public:
-    // Lê o grafo a partir do arquivo
+    // Lê o grafo a partir do arquivo e salva na estrutura Grafo
     Grafo lerGrafo(const string& nomeArquivo) {
         Grafo grafo;
         ifstream arquivo(nomeArquivo);
@@ -81,6 +81,7 @@ public:
             return grafo;
         }
 
+        // Lê as arestas e preenche a lista de adjacência
         while (getline(arquivo, linha)) {
             if (linha.empty()) break;
             size_t espaco = linha.find(' ');
@@ -103,7 +104,7 @@ public:
 
         // Função lambda para calcular o ancestral comum mínimo (ACM) entre dois vértices
         // ACM: vértice mais próximo do início de um caminho
-        auto calcularACM = [&](int a, int b) -> int {
+        auto calcularACM = [&](int a, int b) -> int { //auto: tipo de retorno é inferido pelo compilador
             vector<bool> usadoLocal(n, false);
             while (true) {
                 a = base[a];
