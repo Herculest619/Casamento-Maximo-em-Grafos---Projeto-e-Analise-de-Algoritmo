@@ -55,4 +55,4 @@ Devido a limitações de memória, estamos adotando grafos com uma quantidade eq
 
 ## Resultados
 
-![Gráficos de Dispersão](imagens/Gráficos_200k.png)
+![Gráficos de Dispersão](imagens/Gráficos_Blossom_200k.png)
